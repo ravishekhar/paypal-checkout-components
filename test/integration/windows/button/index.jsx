@@ -25,15 +25,25 @@ if (bridge) {
 
 function renderCheckout(props = {}, context = CONTEXT.POPUP) {
 
+    let cartExchange;
+    if (window.xprops.createBillingAgreement) {
+        cartExchange = () => {
+            return window.xprops.createBillingAgreement().then(() => {
+                return generateOrderID();
+            });
+        };
+    } else if (window.xprops.createSubscription) {
+        cartExchange = () => {
+            return window.xprops.createSubscription().then(() => {
+                return generateOrderID();
+            });
+        };
+    }
 
     window.paypal.Checkout({
 
-        payment: window.xprops.createBillingAgreement
-            ? () => {
-                return window.xprops.createBillingAgreement().then(() => {
-                    return generateOrderID();
-                });
-            }
+        payment: cartExchange
+            ? cartExchange
             : () => {
                 return window.xprops.createOrder({}, {
                     order: {

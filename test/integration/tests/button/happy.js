@@ -6,7 +6,7 @@ import { wrapPromise, createElement, getElement, once } from 'belter/src';
 import { SDK_QUERY_KEYS, QUERY_BOOL } from '@paypal/sdk-constants/src';
 
 import { generateOrderID, createTestContainer, generateBillingAgreementToken,
-    destroyTestContainer, onHashChange, assert, WEBVIEW_USER_AGENT, setSDKScriptUrl } from '../common';
+    destroyTestContainer, onHashChange, assert, WEBVIEW_USER_AGENT, setSDKScriptUrl, generateSubscriptionId } from '../common';
 
 for (const flow of [ 'popup', 'iframe' ]) {
 
@@ -49,6 +49,19 @@ for (const flow of [ 'popup', 'iframe' ]) {
                     test:                   { flow, action: 'checkout', captureOrder: expect('captureOrder') },
                     createBillingAgreement: expect('createBillingAgreement', generateBillingAgreementToken),
                     onCancel:               avoid('onCancel')
+                }).render('#testContainer');
+            });
+        });
+
+        it('should render a button into a container and click on the button, then complete the checkout with createSubscription', () => {
+            return wrapPromise(({ expect, avoid }) => {
+                setSDKScriptUrl({ [ SDK_QUERY_KEYS.VAULT ]: QUERY_BOOL.TRUE });
+
+                return window.paypal.Buttons({
+                    test:                   { flow, action: 'checkout' },
+                    createSubscription: expect('createSubscription', generateSubscriptionId),
+                    onCancel:               avoid('onCancel'),
+                    onApprove:          expect('onApprove')
                 }).render('#testContainer');
             });
         });
